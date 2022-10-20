@@ -66,6 +66,7 @@ function App() {
       });
     }
   }, []);
+  
   //Initial Info Setup
   useEffect(() => {
     api

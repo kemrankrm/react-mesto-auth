@@ -3,11 +3,10 @@ import { Link, useHistory } from "react-router-dom";
 import auth from "../auth";
 
 export default function AuthForm(props) {
-    
   const [userData, setUserData] = useState({ email: "", password: "" });
   const history = useHistory();
 
-    //Controlled Input Setup
+  //Controlled Input Setup
   const handleChange = (e) => {
     if (e.target.name === "email") {
       setUserData({
@@ -22,32 +21,33 @@ export default function AuthForm(props) {
     }
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (props.isRegistration) {
-      auth(userData, "signup").then((res) => {
-        if(res){
-            props.onAuthStatus('success')
-            history.push('/sign-in')
-        } else {
-            props.onAuthStatus('fail')
-        }
-        props.onTooltipOpen(true);
-      })
-      .catch(e => console.log(e));
+      auth(userData, "signup")
+        .then((res) => {
+          if (res) {
+            props.onAuthStatus("success");
+            history.push("/sign-in");
+          } else {
+            props.onAuthStatus("fail");
+          }
+          props.onTooltipOpen(true);
+        })
+        .catch((e) => console.log(e));
     } else {
       auth(userData, "signin")
         .then((res) => {
-            if (res.token) {
-                localStorage.setItem("jwt", res.token);
-                props.onLoggedin(true);
-                props.onCurrentEmail(userData.email);
-                history.push("/main");
-              } else {
-                props.onAuthStatus("fail");
-                props.onTooltipOpen(true);
-              }        
+            console.log(res.token)
+          if (res.token) {
+            localStorage.setItem("jwt", res.token);
+            props.onLoggedin(true);
+            props.onCurrentEmail(userData.email);
+            history.push("/main");
+          } else {
+            props.onAuthStatus("fail");
+            props.onTooltipOpen(true);
+          }
         })
         .catch((e) => console.log(e));
     }
