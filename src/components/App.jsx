@@ -19,7 +19,7 @@ import {
 } from "react-router-dom";
 import Registration from "./Registration.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
-import { getContent } from "../auth.js";
+import auth, { getContent } from "../utils/auth.js";
 import HeaderMenu from "./HeaderMenu.jsx";
 import InfoTooltip from "./InfoTooltip.jsx";
 
@@ -58,33 +58,37 @@ function App() {
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
     if (jwt) {
-      getContent(jwt).then((res) => {
-        if (res) {
-          setLoggedIn(true);
-          setCurrentEmail(res.email);
-        }
-      });
+      getContent(jwt)
+        .then((res) => {
+          if (res) {
+            setLoggedIn(true);
+            setCurrentEmail(res.email);
+          }
+        })
+        .catch((e) => console.log(e));
     }
-  }, []);
-  
+  }, [currentEmail]);
+
   //Initial Info Setup
   useEffect(() => {
-    api
-      .getUserData()
-      .then((res) => {
-        setCurrentUser(res);
-      })
-      .catch((err) => console.log(err));
+    if (loggedIn) {
+      api
+        .getUserData()
+        .then((res) => {
+          setCurrentUser(res);
+        })
+        .catch((err) => console.log(err));
 
-    api
-      .getInitialCards()
-      .then((res) => setCards(res))
-      .catch((err) => console.log(err));
-  }, []);
+      api
+        .getInitialCards()
+        .then((res) => setCards(res))
+        .catch((err) => console.log(err));
+    }
+  }, [loggedIn]);
 
   useEffect(() => {
     if (loggedIn) {
-      history.push("/main");
+      history.push("/");
     }
   }, [loggedIn, history]);
 
@@ -181,6 +185,41 @@ function App() {
       .catch((err) => console.log(err));
   };
 
+  //Register Function Handler
+  const handleRegister = (userData) => {
+    auth(userData, "signup")
+      .then((res) => {
+        if (res) {
+          setAuthStatus("success");
+          setIsTooptipModalOpen(true);
+          history.push("/sign-in");
+        } else throw new Error(res)
+      })
+      .catch((e) => {
+        setAuthStatus("fail");
+        setIsTooptipModalOpen(true);
+        console.log(e)
+      });
+  };
+
+  //Login Function Handler
+  const handleLogin = (userData) => {
+    auth(userData, "signin")
+      .then((res) => {
+        if (res.token) {
+          localStorage.setItem("jwt", res.token);
+          setLoggedIn(true);
+          setCurrentEmail(userData.email);
+          history.push("/");
+        }
+      })
+      .catch((e) => {
+        setAuthStatus("fail");
+        setIsTooptipModalOpen(true);
+        console.log(e)
+      });
+  };
+
   // Logout Handler
   const handleLogoutClick = () => {
     localStorage.removeItem("jwt");
@@ -226,36 +265,31 @@ function App() {
 
         <Switch>
           <Route exact path="/">
-            {loggedIn ? <Redirect to="/main" /> : <Redirect to="sign-up" />}
+            {loggedIn ? (
+              <ProtectedRoute
+                component={Main}
+                exact
+                path="/"
+                loggedIn={loggedIn}
+                onEditProfile={handleEditProfileClick}
+                onAddPlace={handleAddPlaceClick}
+                onEditAvater={handleEditAvatarClick}
+                onCardClick={handleCardClick}
+                cards={cards}
+                onCardDelete={handleCardDelete}
+                onCardLike={handleCardLike}
+              />
+            ) : (
+              <Redirect to="sign-up" />
+            )}
           </Route>
 
-          <ProtectedRoute
-            component={Main}
-            path="/main"
-            loggedIn={loggedIn}
-            onEditProfile={handleEditProfileClick}
-            onAddPlace={handleAddPlaceClick}
-            onEditAvater={handleEditAvatarClick}
-            onCardClick={handleCardClick}
-            cards={cards}
-            onCardDelete={handleCardDelete}
-            onCardLike={handleCardLike}
-          />
-
           <Route path="/sign-in">
-            <Login
-              onLoggedin={setLoggedIn}
-              onCurrentEmail={setCurrentEmail}
-              onAuthStatus={setAuthStatus}
-              onTooltipOpen={setIsTooptipModalOpen}
-            />
+            <Login onLogin={handleLogin} />
           </Route>
 
           <Route path="/sign-up">
-            <Registration
-              onAuthStatus={setAuthStatus}
-              onTooltipOpen={setIsTooptipModalOpen}
-            />
+            <Registration onRegister={handleRegister} />
           </Route>
         </Switch>
         <Footer />

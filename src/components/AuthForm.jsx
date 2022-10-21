@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
-import auth from "../auth";
+import { Link } from "react-router-dom";
 
 export default function AuthForm(props) {
   const [userData, setUserData] = useState({ email: "", password: "" });
-  const history = useHistory();
 
   //Controlled Input Setup
   const handleChange = (e) => {
@@ -23,36 +21,12 @@ export default function AuthForm(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (props.isRegistration) {
-      auth(userData, "signup")
-        .then((res) => {
-          if (res) {
-            props.onAuthStatus("success");
-            history.push("/sign-in");
-          } else {
-            props.onAuthStatus("fail");
-          }
-          props.onTooltipOpen(true);
-        })
-        .catch((e) => console.log(e));
-    } else {
-      auth(userData, "signin")
-        .then((res) => {
-            console.log(res.token)
-          if (res.token) {
-            localStorage.setItem("jwt", res.token);
-            props.onLoggedin(true);
-            props.onCurrentEmail(userData.email);
-            history.push("/main");
-          } else {
-            props.onAuthStatus("fail");
-            props.onTooltipOpen(true);
-          }
-        })
-        .catch((e) => console.log(e));
+    if(props.isRegistration){
+      props.onRegister(userData)
+    } else{
+      props.onLogin(userData);
     }
-  };
-
+  }
   return (
     <div className="authentification">
       <form className="authentification__form" onSubmit={handleSubmit}>

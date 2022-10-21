@@ -7,10 +7,7 @@ export default function Login(props) {
         isRegistration={false}
         buttonText="Войти"
         legend="Вход"
-        onLoggedin={props.onLoggedin}
-        onCurrentEmail={props.onCurrentEmail}
-        onAuthStatus={props.onAuthStatus}
-        onTooltipOpen={props.onTooltipOpen}
+        onLogin={props.onLogin}
       />
     </>
   );

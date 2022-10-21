@@ -12,10 +12,11 @@ export default function auth(data, endPoint){
         })
     })
     .then(res => {
-        console.log(res)
         try {
             if(res.ok === true){
                 return res.json()
+            } else{
+                return Promise.reject(`Error ${res.status}`)
             }
         } catch(e){
             return e
@@ -33,7 +34,17 @@ export function getContent(jwt){
             "Authorization" : `Bearer ${jwt}`
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        try{
+            if(res.ok === true){
+                return res.json()
+            } else {
+                return Promise.reject(`Error ${res.status}`)
+            }
+        } catch(e){
+            return e
+        }
+    })
     .then(res => res.data)
     .catch(e => console.log(e))
 }
