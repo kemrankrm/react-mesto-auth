@@ -280,7 +280,7 @@ function App() {
                 onCardLike={handleCardLike}
               />
             ) : (
-              <Redirect to="sign-up" />
+              <Redirect to="sign-in" />
             )}
           </Route>
 
